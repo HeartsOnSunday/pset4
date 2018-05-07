@@ -44,7 +44,7 @@ main should return 2
 */
 
 
-FILE *inptr = fopen(infile, "r");       //filepointer opens image
+FILE *inptr = fopen(infile, "r");       //filepointer opens image for reading
     if (inptr == NULL)
     {
         fprintf(stderr, "Could not open %s.\n", infile); //if the file cannot be opened return error
@@ -57,7 +57,7 @@ as with fprintf (to stderr),
 and main should return 3.
 */
 
-    FILE *outptr = fopen(outfile, "w"); //filepointer opens output file for new image
+    FILE *outptr = fopen(outfile, "w"); //filepointer opens output file to write new image
     if (outptr == NULL)
     {
         fclose(inptr);
@@ -110,6 +110,17 @@ and main should return 4.
 
             // read RGB triple from infile
             fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+
+            //read over pixels in scanline and change color
+            if (triple.rgbtRed == 0xff)
+            {
+                triple.rgbtRed = 0x00;
+            }
+            if (triple.rgbtGreen == 0xff && triple.rgbtBlue == 0xff)
+            {
+                triple.rgbtGreen = 0x00;
+                triple.rgbtBlue = 0x00;
+            }
 
             // write RGB triple to outfile
             fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
