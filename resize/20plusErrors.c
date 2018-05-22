@@ -86,6 +86,8 @@ BITMAPINFOHEADER NEWbi = bi;
 
 NEWbi.biWidth *= mult;
 NEWbi.biHeight *= mult;
+// determine padding for scanlines
+int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 int NEWpadding = (4 - (NEWbi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 NEWbi.biSizeImage = (sizeof(RGBTRIPLE) * NEWbi.biWidth + NEWpadding) * abs(NEWbi.biHeight);
 NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
@@ -95,20 +97,19 @@ NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOH
 
     // write outfile's BITMAPFILEHEADER
 /*Use the outfile to write 1 element the size BITMAPFILEHEADER starting at &bf*/
-    fwrite(&bf, sizeof(BITMAPFILEHEADER), 1, outptr);
+    fwrite(&NEWbf, sizeof(BITMAPFILEHEADER), 1, outptr);
 
 /*Write to the outfie 1 element the size BITMAPINFOHEADER starting from location of struct bi*/
     // write outfile's BITMAPINFOHEADER
-    fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
+    fwrite(&NEWbi, sizeof(BITMAPINFOHEADER), 1, outptr);
 
-    // determine padding for scanlines
-    int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+
 
     // iterate over infile's scanlines
 /*start at the first pixel and read across the width writing pixels into
     file with struct triple*/
 
-    for (int i = 0, Height = abs(bi.biHeight); i < Height; i++)
+    for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
     {
         for (int vertical = 0; vertical < mult; vertical++)
         {
@@ -126,21 +127,25 @@ NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOH
                     // write RGB triple to outfile
                     fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
                 }
-                //skip over padding, if any
-                fseek(inptr, padding, SEEK_CUR);
 
-                //Add padding to outfile
+            }
+
+            //skip over padding, if any
+            fseek(inptr, padding, SEEK_CUR);
+
+            //Add padding to outfile
             for (int k = 0; k < NEWpadding; k++)
             {
                 fputc(0x00, outptr);
             }
+
             if (vertical < mult - 1)
             {
                 fseek(inptr, -(bi.biWidth * 3 + padding), SEEK_CUR);
 
             }
-
         }
+
     }
 
     // close infile
@@ -153,4 +158,4 @@ NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOH
     return 0;
 }
 
-}
+
