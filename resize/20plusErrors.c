@@ -26,13 +26,13 @@ int main(int argc, char *argv[])
     // open input file
     FILE *inptr = fopen(infile, "r");
     if (inptr == NULL)
+    {
 /*if it isnt opened:
     A. the files doesnrt exist
     B. wrong permissions,
         fopen() allows read permission
         to infile: line 33
         */
-    {
         fprintf(stderr, "Could not open %s.\nCheck spelling of infile.\n", infile);
         return 2;
     }
@@ -105,31 +105,41 @@ NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOH
     int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
     // iterate over infile's scanlines
-/* start at the first pixel and read across the width writing pixels into
+/*start at the first pixel and read across the width writing pixels into
     file with struct triple*/
 
-    for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
+    for (int i = 0, Height = abs(bi.biHeight); i < Height; i++)
     {
-        // iterate over pixels in scanline
-        for (int j = 0; j < bi.biWidth; j++)
+        for (int vertical = 0; vertical < mult; vertical++)
         {
-            // temporary storage
-            RGBTRIPLE triple;
+            // iterate over pixels in scanline
+            for (int j = 0; j < bi.biWidth; j++)
+            {
+                // temporary storage
+                RGBTRIPLE triple;
 
-            // read RGB triple from infile
-            fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+                // read RGB triple from infile
+                fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
-            // write RGB triple to outfile
-            fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
-        }
+                for (int horizontal = 0; horizontal < mult; horizontal++)
+                {
+                    // write RGB triple to outfile
+                    fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                }
+                //skip over padding, if any
+                fseek(inptr, padding, SEEK_CUR);
 
-        // skip over padding, if any
-        fseek(inptr, padding, SEEK_CUR);
+                //Add padding to outfile
+            for (int k = 0; k < NEWpadding; k++)
+            {
+                fputc(0x00, outptr);
+            }
+            if (vertical < mult - 1)
+            {
+                fseek(inptr, -(bi.biWidth * 3 + padding), SEEK_CUR);
 
-        // then add it back (to demonstrate how)
-        for (int k = 0; k < padding; k++)
-        {
-            fputc(0x00, outptr);
+            }
+
         }
     }
 
@@ -143,17 +153,4 @@ NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOH
     return 0;
 }
 
-/*
-
-create new variabes
-
-NEWbi.biWidth *= mult;
-NEWbi.biHeight *= mult;
-int NEWpadding = (4 - (NEWbi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-NEWbi.biSizeImage = (sizeof(RGBTRIPLE) * NEWbi.biWidth + NEWpadding) * abs(NEWbi.biHeight);
-NEWbf.bfSize = NEWbi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-
-Next, figure out how image is being resized widthwise!
-
-*/
+}
