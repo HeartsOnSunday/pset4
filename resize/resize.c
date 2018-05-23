@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
     FILE *inptr = fopen(infile, "r");
     if (inptr == NULL)
     {
-/*if it isnt opened:
-    A. the files doesnrt exist
-    B. wrong permissions,
-        fopen() allows read permission
-        to infile: line 33
-        */
+        /*if it isnt opened:
+            A. the files doesnrt exist
+            B. wrong permissions,
+                fopen() allows read permission
+                to infile: line 33
+                */
         fprintf(stderr, "Could not open %s.\nCheck spelling of infile.\n", infile);
         return 2;
     }
@@ -41,9 +41,9 @@ int main(int argc, char *argv[])
     FILE *outptr = fopen(outfile, "w");
     if (outptr == NULL)
     {
-/*if it isnt opened:
-    A. the files doesnrt exist
-    B. wrong permissions,
+        /*if it isnt opened:
+            A. the files doesnrt exist
+            B. wrong permissions,
         fopen() allows write permission
         to outfile: line 41
         */
